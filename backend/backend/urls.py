@@ -8,7 +8,6 @@ urlpatterns = [
     path('api/', include('api.urls')),
 ]
 
-handler404 = 'api.views.page_not_found'
 
 if settings.DEBUG:
     urlpatterns += static(

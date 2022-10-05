@@ -38,7 +38,7 @@ class Users(models.Model):
         ordering = ('username',)
 
 
-class Subscription(models.Model):
+class Subscribe(models.Model):
 
     user = models.ForeignKey(
         Users,
