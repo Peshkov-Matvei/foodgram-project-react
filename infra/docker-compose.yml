@@ -6,7 +6,7 @@ services:
     volumes:
       - /var/lib/postgresql/data/
     env_file:
-      - ./.env  
+      - ./.env
 
   backend:
     image: peshkmatvei/foodgram-project-react:v2.11.1989
@@ -24,6 +24,8 @@ services:
     container_name: foodgram_frontend
     volumes:
       - ./frontend/:/app/result_build/
+    depends_on:
+      - backend
 
   nginx:
     image: nginx:1.21.3-alpine
@@ -41,3 +43,4 @@ volumes:
   postgres_data:
   static_value:
   media_value:
+  result_build:
