@@ -1,15 +1,9 @@
-FROM python:3.9
+FROM python:3.8-slim
 
 WORKDIR /app
 
-COPY requirements.txt .
+COPY . .
 
-RUN apt update && \
-    apt upgrade -y && \
-    apt -y install gcc && \
-    python3 -m pip install --upgrade pip && \
-    pip3 install -r requirements.txt --no-cache-dir
+RUN pip3 install --upgrade pip && pip3 install -r requirements.txt --no-cache-dir
 
-COPY . ./
-
-CMD ["gunicorn", "backend.wsgi:application", "--bind", "0:8000"]
+CMD ["gunicorn", "backend.wsgi:application", "--bind", "0:8000" ]
