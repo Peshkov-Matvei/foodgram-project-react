@@ -10,7 +10,7 @@ services:
       - ./.env
 
   backend:
-    image: peshkmatvei/foodgram-project-react:latest
+    image: peshkmatvei/foodgram-project-react:v2.11.1989
     expose:
       - 8000
     restart: always
@@ -37,7 +37,7 @@ services:
       - frontend
 
   frontend:
-    image: peshkmatvei/foodgram-project-react_frontend:v1
+    image: peshkmatvei/foodgram-project-react_frontend:v2.11.1989
     volumes:
       - ../frontend/:/app/result_build/
 
