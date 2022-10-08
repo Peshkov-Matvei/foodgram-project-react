@@ -1,10 +1,7 @@
-FROM python:3.7.4-buster
-WORKDIR /app
+FROM python:3.8.5
+
+WORKDIR /code
 COPY requirements.txt .
-RUN apt update && \
-    apt upgrade -y && \
-    python -m pip install --upgrade pip && \
-    pip install -r requirements.txt && \
-    pip install gunicorn==20.0.4
+RUN pip install -r ./requirements.txt
 COPY . .
-CMD ["gunicorn", "backend.wsgi", "-b", "0.0.0.0:8000"]
+CMD gunicorn config.wsgi:application --bind 0.0.0.0:8000
