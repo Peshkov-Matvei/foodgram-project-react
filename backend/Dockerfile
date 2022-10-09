@@ -7,4 +7,4 @@ RUN apt update && \
     pip install -r requirements.txt && \
     pip install gunicorn==20.0.4
 COPY . .
-CMD ["gunicorn", "backend.wsgi", "-b", "0.0.0.0:8000"
+CMD ["gunicorn", "backend.wsgi", "-b", "0.0.0.0:8000"]
