@@ -1,6 +1,8 @@
+from django.contrib.auth import get_user_model
 from django.db import models
 
-from users.models import Users
+
+User = get_user_model()
 
 
 class Ingredient(models.Model):
@@ -47,7 +49,7 @@ class Tags(models.Model):
     )
 
     def __str__(self):
-        return self.slug
+        return self.name
 
     class Meta():
         verbose_name = 'Тег'
@@ -58,7 +60,7 @@ class Tags(models.Model):
 class Recipes(models.Model):
 
     author = models.ForeignKey(
-        Users,
+        User,
         max_length=128,
         help_text='Введите автора рецепта',
         verbose_name='Имя автора',
@@ -107,13 +109,13 @@ class Recipes(models.Model):
     class Meta():
         verbose_name = 'Рецепт'
         verbose_name_plural = 'Рецепты'
-        ordering = ('name',)
+        ordering = ('pub_date',)
 
 
-class ShoppingCard(models.Model):
+class ShoppingCart(models.Model):
 
-    name = models.ForeignKey(
-        Users,
+    user = models.ForeignKey(
+        User,
         verbose_name='Список покупок',
         help_text='Добавте ингридиенты в список покупок',
         on_delete=models.CASCADE,
@@ -126,17 +128,20 @@ class ShoppingCard(models.Model):
     )
 
     def __str__(self):
-        return self.name, self.recipe
+        return self.user, self.recipe
 
     class Meta():
         verbose_name = 'Список покупок'
         verbose_name_plural = 'Списки покупок'
+        constraints = (models.UniqueConstraint(
+            fields=['user', 'recipe'], name='unique_shoppingCard'
+        ),)
 
 
 class Favorite(models.Model):
 
     user = models.ForeignKey(
-        Users,
+        User,
         verbose_name='Пользователь',
         help_text='Добавте пользователя в изранное',
         on_delete=models.CASCADE,
@@ -154,11 +159,14 @@ class Favorite(models.Model):
     class Meta():
         verbose_name = 'Избранное'
         verbose_name_plural = 'Избранные'
+        constraints = (models.UniqueConstraint(
+            fields=['user', 'recipe'], name='unique_favorite'
+        ),)
 
 
 class RecipeTags(models.Model):
 
-    name = models.ForeignKey(
+    tags = models.ForeignKey(
         Tags,
         verbose_name='Название тега',
         help_text='Введите имя тега',
@@ -172,7 +180,7 @@ class RecipeTags(models.Model):
     )
 
     def __str__(self):
-        return self.name, self.recipe
+        return self.tags, self.recipe
 
     class Meta():
         verbose_name = 'Тег в рецепте'

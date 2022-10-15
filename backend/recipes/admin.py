@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Favorite, Ingredient, Recipes, ShoppingCard, Tags
+from .models import Favorite, Ingredient, Recipes, ShoppingCart, Tags
 
 
 @admin.register(Ingredient)
@@ -32,11 +32,11 @@ class RecipeAdmin(admin.ModelAdmin):
     count_favorite.short_description = 'Число добавлении в избранное'
 
 
-@admin.register(ShoppingCard)
-class ShoppingCardAdmin(admin.ModelAdmin):
-    list_display = ('name', 'recipe')
-    search_fields = ('name',)
-    list_filter = ('name',)
+@admin.register(ShoppingCart)
+class ShoppingCartAdmin(admin.ModelAdmin):
+    list_display = ('user', 'recipe')
+    search_fields = ('user',)
+    list_filter = ('user',)
     empty_value_display = '-пусто-'
 
 

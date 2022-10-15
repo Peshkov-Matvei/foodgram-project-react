@@ -1,13 +1,22 @@
 from django.contrib.auth import get_user_model
+from djoser.serializers import UserCreateSerializer, UserSerializer
+from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
 
-from recipes.models import Ingredient, Recipes, Tags
-from users.models import Subscribe
+from recipes.models import Ingredient, Recipes, Tags, ShoppingCart, Favorite
+from users.models import Subscribe, User
 
 User = get_user_model()
 
 
-class UserListSerializer(serializers.ModelSerializer):
+class CustomUserCreateSerializer(UserCreateSerializer):
+
+    class Meta:
+        model = User
+        fields = '__all__'
+
+
+class CustomUserSerializer(UserSerializer):
     is_subscribed = serializers.SerializerMethodField()
 
     class Meta:
@@ -18,11 +27,12 @@ class UserListSerializer(serializers.ModelSerializer):
         return (self.context.get('request').user.is_authenticated
                 and Subscribe.objects.filter(
                     user=self.context.get('request').user,
-                    author=obj
-        ).exists())
+                    author=obj).exists()
+                )
 
 
 class TagsSerializers(serializers.ModelSerializer):
+
     class Meta():
         fields = '__all__'
         model = Tags
@@ -31,11 +41,16 @@ class TagsSerializers(serializers.ModelSerializer):
 class FavoriteSerializers(serializers.ModelSerializer):
     id = serializers.IntegerField(source='id_favorite',)
     cooking_time = serializers.IntegerField(source='cooking_time_favorite',)
+    image = Base64ImageField(source='image_favorite',)
     name = serializers.CharField(
         source='name_favorite',
         max_length=128,
         allow_blank=False,
     )
+
+    class Meta:
+        model = Favorite
+        fields = '__all__'
 
 
 class ShoppingCardSerializers(serializers.ModelSerializer):
@@ -50,6 +65,10 @@ class ShoppingCardSerializers(serializers.ModelSerializer):
         allow_blank=False,
     )
 
+    class Meta:
+        model = ShoppingCart
+        fields = ('id', 'name', 'image', 'cooking_time')
+
 
 class IngredientSerializers(serializers.ModelSerializer):
     id = serializers.ReadOnlyField(source='id_ingridient',)
@@ -63,8 +82,17 @@ class IngredientSerializers(serializers.ModelSerializer):
     )
 
     class Meta():
-        model = Ingredient
         fields = '__all__'
+        model = Ingredient
+
+
+class IngredientsRedactSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(source='id_ingridientredact',)
+    amount = serializers.IntegerField(source='id_ingridientredact',)
+
+    class Meta:
+        fields = '__all__'
+        model = Ingredient
 
 
 class SubscribeSerializers(serializers.ModelSerializer):
@@ -107,6 +135,13 @@ class SubscribeSerializers(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class SubscribeRecipeSerializers(serializers.ModelSerializer):
+
+    class Meta:
+        model = Subscribe
+        fields = '__all__'
+
+
 class RecipesSerializers(serializers.ModelSerializer):
     author = serializers.CharField(
         source='author_recipes',
@@ -130,7 +165,27 @@ class RecipesSerializers(serializers.ModelSerializer):
         max_length=128,
         allow_blank=False,
     )
+    image = Base64ImageField(source='image_recipes')
 
     class Meta:
         model = Recipes
         fields = '__all__'
+
+    def create(self, validated_data):
+        ingredients = validated_data.pop('ingredients')
+        tags = validated_data.pop('tags')
+        recipe = Recipes.objects.create(**validated_data)
+        recipe.tags.set(tags)
+        self.create_ingredients(ingredients, recipe)
+        return recipe
+
+    def update(self, instance, validated_data):
+        if 'ingredients' in validated_data:
+            ingredients = validated_data.pop('ingredients')
+            instance.ingredients.clear()
+            self.create_ingredients(ingredients, instance)
+        if 'tags' in validated_data:
+            instance.tags.set(
+                validated_data.pop('tags'))
+        return super().update(
+            instance, validated_data)

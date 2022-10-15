@@ -1,9 +1,9 @@
 from django.contrib import admin
 
-from .models import Subscribe, Users
+from .models import Subscribe, User
 
 
-@admin.register(Users)
+@admin.register(User)
 class UsersAdmin(admin.ModelAdmin):
     list_display = (
         'id',

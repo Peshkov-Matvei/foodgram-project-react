@@ -1,7 +1,8 @@
+from django.contrib.auth.models import AbstractUser
 from django.db import models
 
 
-class Users(models.Model):
+class User(AbstractUser):
 
     first_name = models.CharField(
         max_length=128,
@@ -41,14 +42,14 @@ class Users(models.Model):
 class Subscribe(models.Model):
 
     user = models.ForeignKey(
-        Users,
+        User,
         related_name='follower',
         verbose_name='Пользователь',
         help_text='Выберите пользователя',
         on_delete=models.CASCADE,
     )
     author = models.ForeignKey(
-        Users,
+        User,
         related_name='following',
         verbose_name='Автор',
         help_text='Выберите автора',
@@ -61,3 +62,6 @@ class Subscribe(models.Model):
     class Meta():
         verbose_name = 'Подписка'
         verbose_name_plural = 'Подписки'
+        constraints = (models.UniqueConstraint(
+            fields=['user', 'author'], name='unique_follow'
+        ),)
