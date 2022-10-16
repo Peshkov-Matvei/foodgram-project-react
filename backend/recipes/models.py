@@ -1,7 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.db import models
 
-
 User = get_user_model()
 
 
@@ -28,33 +27,32 @@ class Ingredient(models.Model):
 
 
 class Tags(models.Model):
-
     name = models.CharField(
-        max_length=128,
-        verbose_name='Название тега',
-        help_text='Введите имя тега',
+        'Название тега',
+        max_length=200,
         unique=True,
     )
     color = models.CharField(
-        max_length=32,
-        verbose_name='Цвет кода',
-        help_text='Введите цвет кода',
+        'Цветовой HEX-код',
+        max_length=7,
+        default='#00ff7f',
+        null=True,
+        blank=True,
         unique=True,
     )
     slug = models.SlugField(
-        max_length=256,
-        verbose_name='Слаг',
-        help_text='Введите слаг',
+        'Slug тега',
+        max_length=200,
         unique=True,
     )
 
-    def __str__(self):
-        return self.name
-
-    class Meta():
+    class Meta:
         verbose_name = 'Тег'
         verbose_name_plural = 'Теги'
         ordering = ('name',)
+
+    def __str__(self):
+        return self.name
 
 
 class Recipes(models.Model):

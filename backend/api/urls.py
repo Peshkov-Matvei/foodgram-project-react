@@ -2,7 +2,7 @@ from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
 from .views import (FavoriteViewSet, IngredientViewSet, RecipesViewSet,
-                    ShoppingCartViewSet, SubscribeViewSet, TagsViewSet,
+                    ShoppingCardViewSet, SubscribeViewSet, TagsViewSet,
                     UserViewSet)
 
 app_name = 'api'
@@ -19,7 +19,7 @@ router_v1.register(
     r'recipes/(?P<recipe_id>\d+)/favorite', FavoriteViewSet,
     basename='favorite')
 router_v1.register(
-    r'recipes/(?P<recipe_id>\d+)/shopping_cart', ShoppingCartViewSet,
+    r'recipes/(?P<recipe_id>\d+)/shopping_cart', ShoppingCardViewSet,
     basename='shoppingcart')
 
 urlpatterns = [

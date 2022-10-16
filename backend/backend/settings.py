@@ -1,4 +1,5 @@
 import os
+
 from dotenv import load_dotenv
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -7,7 +8,7 @@ load_dotenv()
 # SECRET_KEY = os.getenv('SECRET_KEY')
 SECRET_KEY = 'b&-vo-)cf)&65flfcigpdefow%vuffb3%#z6lidh@dkaaff1@v'
 
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['*', '127.0.0.1', 'localhost', '158.160.4.3', 'backend', ]
 
@@ -66,17 +67,10 @@ DATABASES = {
         'NAME': os.getenv('DB_NAME', default='postgres'),
         'USER': os.getenv('POSTGRES_USER', default='postgres'),
         'PASSWORD': os.getenv('POSTGRES_PASSWORD', default='postgres'),
-        'HOST': os.getenv('DB_HOST', default='127.0.0.1'),
+        'HOST': os.getenv('DB_HOST', default='localhost'),
         'PORT': os.getenv('DB_PORT', default='5432')
     }
 }
-
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-#     }
-# }
 
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -106,7 +100,6 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticatedOrReadOnly',
     ],
-    'PAGE_SIZE': 6,
 }
 
 DJOSER = {
@@ -125,11 +118,4 @@ DJOSER = {
 }
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-AUTH_USER_MODEL = "users.User"
-
-# CORS_ALLOWED_ORIGINS = [
-#    'http://localhost:3000',
-# ]
-
-CORS_URLS_REGEX = True
-CORS_URLS_REGEX = r'^/api/.*$'
+AUTH_USER_MODEL = 'users.User'

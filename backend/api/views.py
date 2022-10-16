@@ -2,6 +2,7 @@ from http import HTTPStatus
 
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
+from djoser.views import UserViewSet
 from rest_framework.response import Response
 from rest_framework import mixins, viewsets, permissions
 
@@ -26,11 +27,11 @@ class MIXINS_VIEWSET_LIST(mixins.CreateModelMixin,
     pass
 
 
-class UserViewSet(viewsets.ReadOnlyModelViewSet):
+class UserViewSet(UserViewSet):
     queryset = User.objects.all()
     permission_classes = (IsAuthorOrReadOnlyPermission,)
 
-    def erializer_class(self):
+    def get_serializer_class(self):
         if self.action == 'create':
             return CustomUserCreateSerializer
 
@@ -38,42 +39,34 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
 
     def subscriptions(self, request):
         queryset = Subscribe.objects.filter(user=request.user)
-        pages = self.paginate_queryset(queryset)
         serializer = SubscribeSerializers(
-            pages,
-            many=True,
+            self.paginate_queryset(queryset),
             context={'request': request},
         )
         return self.get_paginated_response(serializer.data)
 
 
 class SubscribeViewSet(MIXINS_VIEWSET_LIST):
+    queryset = Subscribe.objects.all()
     serializer_class = (SubscribeSerializers,)
     permission_classes = (IsAuthorOrReadOnlyPermission,)
 
-    def queryset(self):
-        return self.request.user.follower.all()
-
-    def get_serializer_context(self):
-        context = super().get_serializer_context()
-        context['author_id'] = self.kwargs.get('user_id')
-        return context
-
     def create(self, request, *args, **kwargs):
-        user = get_object_or_404(
-            User,
-            id=self.kwargs.get('id_users')
-        )
+        user_id = self.kwargs.get('users_id')
+        user = get_object_or_404(User, id=user_id)
         Subscribe.objects.create(
-            user=request.user, following=user
+            user=request.user,
+            following=user
         )
         return Response(HTTPStatus.CREATED)
 
     def delete(self, request, *args, **kwargs):
+        author_id = self.kwargs['users_id']
+        user_id = request.user.id
         subscribe = get_object_or_404(
             Subscribe,
-            user__id=request.user.id,
-            following__id=self.kwargs['users']
+            user__id=user_id,
+            following__id=author_id
         )
         subscribe.delete()
         return Response(HTTPStatus.NO_CONTENT)
@@ -81,23 +74,23 @@ class SubscribeViewSet(MIXINS_VIEWSET_LIST):
 
 class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Ingredient.objects.all()
-    serializer_class = (IngredientSerializers,)
-    pagination_class = (CustomPagination,)
+    serializer_class = (IngredientSerializers)
+    pagination_class = (CustomPagination)
     permission_classes = (permissions.AllowAny,)
     filterset_class = (IngredientFilter,)
 
 
 class TagsViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Tags.objects.all()
-    serializer_class = (TagsSerializers,)
-    pagination_class = (CustomPagination,)
+    serializer_class = (TagsSerializers)
+    pagination_class = (CustomPagination)
     permission_classes = (IsAuthorOrReadOnlyPermission,)
 
 
 class RecipesViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Recipes.objects.all()
-    serializer_class = (RecipesSerializers,)
-    pagination_class = (CustomPagination,)
+    serializer_class = (RecipesSerializers)
+    pagination_class = (CustomPagination)
     permission_classes = (IsAuthorOrReadOnlyPermission,)
     filterset_class = (RecipeFilter,)
 
@@ -111,56 +104,47 @@ class FavoriteViewSet(MIXINS_VIEWSET_LIST):
     permission_classes = (IsAuthorOrReadOnlyPermission,)
 
     def create(self, request, *args, **kwargs):
-        user = get_object_or_404(
-            User,
-            id=self.kwargs.get('id_users')
-        )
-        Subscribe.objects.create(
-            user=request.user, following=user
+        recipe_id = int(self.kwargs['recipes_id'])
+        recipes = get_object_or_404(Recipes, id=recipe_id)
+        self.model.objects.create(
+            user=request.user,
+            recipe=recipes
         )
         return Response(HTTPStatus.CREATED)
 
     def delete(self, request, *args, **kwargs):
-        subscribe = get_object_or_404(
-            Subscribe,
-            user__id=request.user.id,
-            following__id=self.kwargs['users']
+        recipe_id = self.kwargs['recipes_id']
+        user_id = request.user.id
+        object = get_object_or_404(
+            Favorite,
+            user__id=user_id,
+            recipe__id=recipe_id
         )
-        subscribe.delete()
+        object.delete()
         return Response(HTTPStatus.NO_CONTENT)
 
 
-class ShoppingCartViewSet(MIXINS_VIEWSET_LIST):
+class ShoppingCardViewSet(MIXINS_VIEWSET_LIST):
     queryset = ShoppingCart.objects.all()
     serializer_class = (ShoppingCardSerializers,)
     pagination_class = (CustomPagination,)
 
-    def get_queryset(self):
-        user = self.request.user.id
-        return ShoppingCart.objects.filter(user=user)
-
-    def get_serializer_context(self):
-        context = super().get_serializer_context()
-        context['recipe_id'] = self.kwargs.get('recipe_id')
-        return context
-
-    def shoppingcard_create(self, request, *args, **kwargs):
-
-        user = get_object_or_404(
-            User,
-            id=self.kwargs.get('recipes_id')
-        )
-        ShoppingCart.objects.create(
-            user=request.user, following=user
+    def create(self, request, *args, **kwargs):
+        shoppingcard_id = int(self.kwargs['shoppingcard_id'])
+        shopingcard = get_object_or_404(Recipes, id=shoppingcard_id)
+        self.model.objects.create(
+            user=request.user,
+            recipe=shopingcard
         )
         return Response(HTTPStatus.CREATED)
 
-    def shoppingcard_delete(self, request, *args, **kwargs):
-
-        subscribe = get_object_or_404(
-            ShoppingCart,
-            user__id=request.user.id,
-            following__id=self.kwargs['recipes_id']
+    def delete(self, request, *args, **kwargs):
+        shoppingcard_id = self.kwargs['shoppingcard_id']
+        user_id = request.user.id
+        object = get_object_or_404(
+            Subscribe,
+            user__id=user_id,
+            shoppingcard__id=shoppingcard_id
         )
-        subscribe.delete()
+        object.delete()
         return Response(HTTPStatus.NO_CONTENT)

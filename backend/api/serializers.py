@@ -3,7 +3,7 @@ from djoser.serializers import UserCreateSerializer, UserSerializer
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
 
-from recipes.models import Ingredient, Recipes, Tags, ShoppingCart, Favorite
+from recipes.models import Favorite, Ingredient, Recipes, ShoppingCart, Tags
 from users.models import Subscribe, User
 
 User = get_user_model()
@@ -33,9 +33,9 @@ class CustomUserSerializer(UserSerializer):
 
 class TagsSerializers(serializers.ModelSerializer):
 
-    class Meta():
-        fields = '__all__'
+    class Meta:
         model = Tags
+        fields = '__all__'
 
 
 class FavoriteSerializers(serializers.ModelSerializer):
@@ -67,7 +67,7 @@ class ShoppingCardSerializers(serializers.ModelSerializer):
 
     class Meta:
         model = ShoppingCart
-        fields = ('id', 'name', 'image', 'cooking_time')
+        fields = '__all__'
 
 
 class IngredientSerializers(serializers.ModelSerializer):
@@ -144,48 +144,17 @@ class SubscribeRecipeSerializers(serializers.ModelSerializer):
 
 class RecipesSerializers(serializers.ModelSerializer):
     author = serializers.CharField(
-        source='author_recipes',
         max_length=128,
         read_only=True,
         allow_blank=False,
     )
     ingredients = serializers.CharField(
-        source='ingredients_recipes',
         max_length=128,
         allow_blank=False,
     )
-    shopping_list = serializers.CharField(
-        source='shopping_list_recipes',
-        max_length=128,
-        allow_blank=False,
-    )
-    tags = serializers.CharField(source='tags_recipes', max_length=128)
-    ingredients = serializers.CharField(
-        source='ingredients_recipes',
-        max_length=128,
-        allow_blank=False,
-    )
-    image = Base64ImageField(source='image_recipes')
+    tags = serializers.CharField(max_length=128)
+    image = Base64ImageField()
 
     class Meta:
         model = Recipes
         fields = '__all__'
-
-    def create(self, validated_data):
-        ingredients = validated_data.pop('ingredients')
-        tags = validated_data.pop('tags')
-        recipe = Recipes.objects.create(**validated_data)
-        recipe.tags.set(tags)
-        self.create_ingredients(ingredients, recipe)
-        return recipe
-
-    def update(self, instance, validated_data):
-        if 'ingredients' in validated_data:
-            ingredients = validated_data.pop('ingredients')
-            instance.ingredients.clear()
-            self.create_ingredients(ingredients, instance)
-        if 'tags' in validated_data:
-            instance.tags.set(
-                validated_data.pop('tags'))
-        return super().update(
-            instance, validated_data)
