@@ -3,19 +3,18 @@ from http import HTTPStatus
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 from djoser.views import UserViewSet
+from recipes.models import Favorite, Ingredient, Recipes, ShoppingCart, Tags
+from rest_framework import mixins, permissions, viewsets
 from rest_framework.response import Response
-from rest_framework import mixins, viewsets, permissions
-
-from recipes.models import (Favorite, Ingredient, Recipes,
-                            ShoppingCart, Tags)
 from users.models import Subscribe, User
 
 from .filters import IngredientFilter, RecipeFilter
 from .pagination import CustomPagination
 from .permissions import IsAuthorOrReadOnlyPermission
-from .serializers import (FavoriteSerializers, IngredientSerializers,
+from .serializers import (CustomUserCreateSerializer, CustomUserSerializer,
+                          FavoriteSerializers, IngredientSerializers,
                           RecipesSerializers, ShoppingCardSerializers,
-                          SubscribeSerializers, TagsSerializers, CustomUserSerializer, CustomUserCreateSerializer)
+                          SubscribeSerializers, TagsSerializers)
 
 User = get_user_model()
 
