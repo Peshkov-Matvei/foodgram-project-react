@@ -48,5 +48,8 @@ docker-compose exec backend python manage.py collectstatic --no-input
 ```
 docker-compose exec backend python manage.py createsuperuser
 ```
+### Проверка сайта
+- Проверить сайт можно по адресу http://158.160.34.217/
+- В админку можно зайти с почтой admin@admin.ru и паролем admin04112022
 ### Автор проекта
 Пешков Матвей студент ЯндексПрактикума
