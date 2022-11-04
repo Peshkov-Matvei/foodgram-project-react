@@ -9,7 +9,7 @@ class UsersAdmin(admin.ModelAdmin):
         'id',
         'username',
         'first_name',
-        'second_name',
+        'last_name',
         'email',
     )
     search_fields = (

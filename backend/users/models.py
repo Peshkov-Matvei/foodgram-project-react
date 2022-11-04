@@ -4,27 +4,14 @@ from django.db import models
 
 class User(AbstractUser):
 
-    first_name = models.CharField(
-        max_length=128,
-        unique=True,
-        help_text='Введите имя',
-    )
-    second_name = models.CharField(
-        max_length=128,
-        unique=True,
-        help_text='Введите фамилию',
-    )
-    username = models.CharField(
-        max_length=128,
-        unique=True,
-        help_text='Введите логин',
-    )
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = [
+        'username',
+        'first_name',
+        'last_name',
+    ]
     email = models.EmailField(
-        max_length=128,
-        unique=True,
-        help_text='Введите эмейл',
-    )
-    password = models.CharField(
+        verbose_name='email',
         max_length=128,
         unique=True,
         help_text='Введите пароль',
@@ -43,23 +30,23 @@ class Subscribe(models.Model):
 
     user = models.ForeignKey(
         User,
-        related_name='follower',
-        verbose_name='Пользователь',
+        related_name='subscriber',
+        verbose_name='Подписчик',
         help_text='Выберите пользователя',
         on_delete=models.CASCADE,
     )
     author = models.ForeignKey(
         User,
-        related_name='following',
+        related_name='subscribing',
         verbose_name='Автор',
         help_text='Выберите автора',
         on_delete=models.CASCADE,
     )
 
     def __str__(self):
-        return self.user, self.author
+        return f'Пользователь {self.user} подписан на {self.author}'
 
-    class Meta():
+    class Meta:
         verbose_name = 'Подписка'
         verbose_name_plural = 'Подписки'
         constraints = (models.UniqueConstraint(

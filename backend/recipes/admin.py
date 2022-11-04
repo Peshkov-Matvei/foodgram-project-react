@@ -1,11 +1,11 @@
 from django.contrib import admin
 
-from .models import Favorite, Ingredient, Recipes, ShoppingCart, Tags
+from .models import Favourite, Ingredient, Recipes, ShoppingCart, Tags
 
 
 @admin.register(Ingredient)
 class IngredientAdmin(admin.ModelAdmin):
-    list_display = ('name', 'unit_measurement')
+    list_display = ('name', 'measurement_unit')
     search_fields = ('name',)
     list_filter = ('name',)
     empty_value_display = '-пусто-'
@@ -22,13 +22,13 @@ class TagAdmin(admin.ModelAdmin):
 @admin.register(Recipes)
 class RecipeAdmin(admin.ModelAdmin):
     list_display = ('author', 'name', 'image', 'text',
-                    'time_cooking', 'pub_date')
+                    'cooking_time')
     search_fields = ('name', 'author', 'tags')
     list_filter = ('name', 'author', 'tags')
     empty_value_display = '-пусто-'
 
     def count_favorite(self, obj):
-        return Favorite.objects.filter(recipe=obj).count()
+        return Favourite.objects.filter(recipe=obj).count()
     count_favorite.short_description = 'Число добавлении в избранное'
 
 
@@ -40,7 +40,7 @@ class ShoppingCartAdmin(admin.ModelAdmin):
     empty_value_display = '-пусто-'
 
 
-@admin.register(Favorite)
+@admin.register(Favourite)
 class FavoriteAdmin(admin.ModelAdmin):
     list_display = ('user', 'recipe')
     search_fields = ('user',)

@@ -1,10 +1,10 @@
-FROM python:3.7.4-buster
+FROM python:3.8-slim
+
 WORKDIR /app
-COPY requirements.txt .
-RUN apt update && \
-    apt upgrade -y && \
-    python -m pip install --upgrade pip && \
-    pip install -r requirements.txt && \
-    pip install gunicorn==20.0.4
+
 COPY . .
-CMD ["gunicorn", "backend.wsgi", "-b", "0.0.0.0:8000"]
+
+RUN python -m pip install --upgrade pip
+RUN pip install -r requirements.txt --no-cache-dir
+
+CMD ["gunicorn", "backend.wsgi:application", "--bind", "0:8000" ]

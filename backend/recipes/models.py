@@ -11,14 +11,14 @@ class Ingredient(models.Model):
         verbose_name='Название ингридиента',
         help_text='Введите название ингридиента',
     )
-    unit_measurement = models.CharField(
+    measurement_unit = models.CharField(
         max_length=32,
         verbose_name='Еденица измерения',
         help_text='Введите еденицу измерения',
     )
 
     def __str__(self):
-        return self.name
+        return f'{self.name}, {self.measurement_unit}'
 
     class Meta():
         verbose_name = 'Ингридиент'
@@ -27,22 +27,23 @@ class Ingredient(models.Model):
 
 
 class Tags(models.Model):
+
     name = models.CharField(
-        'Название тега',
-        max_length=200,
+        verbose_name='Название тега',
+        max_length=128,
         unique=True,
     )
     color = models.CharField(
-        'Цветовой HEX-код',
+        verbose_name='Цветовой HEX-код',
         max_length=7,
-        default='#00ff7f',
+        default='#FF0000',
         null=True,
         blank=True,
         unique=True,
     )
     slug = models.SlugField(
-        'Slug тега',
-        max_length=200,
+        verbose_name='Slug тега',
+        max_length=64,
         unique=True,
     )
 
@@ -62,7 +63,8 @@ class Recipes(models.Model):
         max_length=128,
         help_text='Введите автора рецепта',
         verbose_name='Имя автора',
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
+        null=True,
         related_name='recipes',
     )
     name = models.CharField(
@@ -82,32 +84,28 @@ class Recipes(models.Model):
     )
     ingredients = models.ManyToManyField(
         Ingredient,
-        through='RecipeIngredient',
-        verbose_name='Ингридиенты',
-        help_text='Введите игридиенты',
+        through='IngredientInRecipe',
+        related_name='recipes',
+        verbose_name='Ингредиенты'
     )
     tags = models.ManyToManyField(
         Tags,
-        through='RecipeTags',
-        verbose_name='Теги',
+        related_name='recipes',
         help_text='Введите тег',
+        verbose_name='Теги',
     )
-    time_cooking = models.IntegerField(
+    cooking_time = models.IntegerField(
         verbose_name='Время приготовления',
         help_text='Введите время приготовления',
     )
-    pub_date = models.DateTimeField(
-        verbose_name='Дата создания',
-        help_text='Дата создания',
-    )
+
+    class Meta:
+        ordering = ['-id']
+        verbose_name = 'Рецепт'
+        verbose_name_plural = 'Рецепты'
 
     def __str__(self):
         return self.name
-
-    class Meta():
-        verbose_name = 'Рецепт'
-        verbose_name_plural = 'Рецепты'
-        ordering = ('pub_date',)
 
 
 class ShoppingCart(models.Model):
@@ -115,98 +113,78 @@ class ShoppingCart(models.Model):
     user = models.ForeignKey(
         User,
         verbose_name='Список покупок',
+        related_name='shopping_cart',
         help_text='Добавте ингридиенты в список покупок',
         on_delete=models.CASCADE,
     )
     recipe = models.ForeignKey(
         Recipes,
         verbose_name='Рецепт',
+        related_name='shopping_cart',
         help_text='Добавте рецепты в список покупок',
         on_delete=models.CASCADE,
     )
 
     def __str__(self):
-        return self.user, self.recipe
+        return f'В корзине {self.user} находятся {self.recipe}'
 
     class Meta():
         verbose_name = 'Список покупок'
         verbose_name_plural = 'Списки покупок'
         constraints = (models.UniqueConstraint(
-            fields=['user', 'recipe'], name='unique_shoppingCard'
-        ),)
+            fields=['user', 'recipe'], name='unique_shoppingCard'),
+        )
 
 
-class Favorite(models.Model):
+class Favourite(models.Model):
 
     user = models.ForeignKey(
         User,
         verbose_name='Пользователь',
+        related_name='favorites',
         help_text='Добавте пользователя в изранное',
         on_delete=models.CASCADE,
     )
     recipe = models.ForeignKey(
         Recipes,
         verbose_name='Рецепт',
+        related_name='favorites',
         help_text='Добавте рецепты в изранное',
         on_delete=models.CASCADE,
     )
 
     def __str__(self):
-        return self.user, self.recipe
+        return f'Пользователю {self.user} понравился {self.recipe}'
 
     class Meta():
         verbose_name = 'Избранное'
         verbose_name_plural = 'Избранные'
         constraints = (models.UniqueConstraint(
-            fields=['user', 'recipe'], name='unique_favorite'
-        ),)
+            fields=['user', 'recipe'], name='unique_favorite'),
+        )
 
 
-class RecipeTags(models.Model):
+class IngredientInRecipe(models.Model):
 
-    tags = models.ForeignKey(
-        Tags,
-        verbose_name='Название тега',
-        help_text='Введите имя тега',
-        on_delete=models.CASCADE,
-    )
     recipe = models.ForeignKey(
         Recipes,
-        verbose_name='Рецепт',
-        help_text='Добавте рецепты',
         on_delete=models.CASCADE,
+        related_name='ingredient_list',
+        verbose_name='Рецепт',
     )
-
-    def __str__(self):
-        return self.tags, self.recipe
-
-    class Meta():
-        verbose_name = 'Тег в рецепте'
-        verbose_name_plural = 'Теги в рецептах'
-
-
-class RecipeIngredient(models.Model):
-
     ingredient = models.ForeignKey(
         Ingredient,
-        verbose_name='Продукты в рецепте',
-        help_text='Добавте ингридиенты',
         on_delete=models.CASCADE,
-    )
-    recipe = models.ForeignKey(
-        Recipes,
-        verbose_name='Рецепт',
-        help_text='Выберите рецепт',
-        on_delete=models.CASCADE,
+        verbose_name='Ингредиент',
     )
     amount = models.IntegerField(
         verbose_name='Количество',
         help_text='Укажите количство продуктов',
     )
 
-    def __str__(self):
-        return self.ingredient, self.recipe
+    class Meta:
+        verbose_name = 'Ингредиент в рецепте'
+        verbose_name_plural = 'Ингредиенты в рецептах'
 
-    class Meta():
-        verbose_name = 'Ингридиент в рецепте'
-        verbose_name_plural = 'Ингридиенти в рецептах'
+    def __str__(self):
+        return f'{self.ingredient}, {self.recipe}, {self.amount}'
