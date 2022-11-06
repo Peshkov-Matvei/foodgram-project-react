@@ -9,9 +9,8 @@ from rest_framework.decorators import action
 from rest_framework import permissions, status, viewsets
 
 from users.models import Subscribe
-from recipes.models import (Favourite, Ingredient, IngredientInRecipe, Recipes,
-                            ShoppingCart, Tags)
-
+from recipes.models import (Favourite, Ingredient, IngredientInRecipe, Recipe,
+                            ShoppingCart, Tag)
 from .filters import RecipeFilter, IngredientFilter
 from .pagination import CustomPagination
 from .permissions import IsAdminPermission, IsAuthorPermission
@@ -82,13 +81,13 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Tags.objects.all()
+    queryset = Tag.objects.all()
     serializer_class = TagSerializer
     permission_classes = (IsAdminPermission,)
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
-    queryset = Recipes.objects.all()
+    queryset = Recipe.objects.all()
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
     pagination_class = CustomPagination
@@ -114,7 +113,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return self.delete_from(ShoppingCart, request.user, pk)
 
     def add_to(self, model, user, pk):
-        recipe = get_object_or_404(Recipes, id=pk)
+        recipe = get_object_or_404(Recipe, id=pk)
         model.objects.create(user=user, recipe=recipe)
         return Response(
             SmallRecipeSerializer(recipe).data,
@@ -152,12 +151,12 @@ class RecipeViewSet(viewsets.ModelViewSet):
             recipe__shopping_cart__user=request.user
         ).values(
             'ingredient__name', 'ingredient__measurement_unit'
-        ).annotate(amount=Sum('amount'))
+        ).annotate(ingredient_amount=Sum('amount'))
         shopping_cart = (
             'Список покупок: \n\n'
         )
         shopping_cart += '\n'.join([
-            f'{ingredient["ingredient__name"]} - {ingredient["amount"]} '
+            f'{ingredient["ingredient__name"]} - {ingredient["ingredient_amount"]} '
             f'{ingredient["ingredient__measurement_unit"]} '
             for ingredient in ingredients
         ])

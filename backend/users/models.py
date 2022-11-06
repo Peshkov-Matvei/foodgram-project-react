@@ -17,13 +17,13 @@ class User(AbstractUser):
         help_text='Введите пароль',
     )
 
-    def __str__(self):
-        return self.username
-
-    class Meta():
+    class Meta:
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользоватили'
         ordering = ('username',)
+
+    def __str__(self):
+        return self.username
 
 
 class Subscribe(models.Model):
@@ -43,12 +43,12 @@ class Subscribe(models.Model):
         on_delete=models.CASCADE,
     )
 
-    def __str__(self):
-        return f'Пользователь {self.user} подписан на {self.author}'
-
     class Meta:
         verbose_name = 'Подписка'
         verbose_name_plural = 'Подписки'
         constraints = (models.UniqueConstraint(
             fields=['user', 'author'], name='unique_follow'
         ),)
+
+    def __str__(self):
+        return f'Пользователь {self.user} подписан на {self.author}'
