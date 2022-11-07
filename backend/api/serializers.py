@@ -163,8 +163,9 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
             ingredient = get_object_or_404(Ingredient, id=product['id'])
             if ingredient in ingredients:
                 raise exceptions.ValidationError(
-                    'Ингридиент уже существует'
+                    'Ингредиент уже существует'
                 )
+            ingredients.append(ingredient)
         return value
 
     def validate_tags(self, value):
